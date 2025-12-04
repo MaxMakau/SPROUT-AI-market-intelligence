@@ -10,6 +10,7 @@ import uvicorn
 
 from app.config import settings
 from app.routes import predict, ussd, sms, whatsapp
+from app.logistics.logistics_router import router as logistics_router
 
 
 # Create FastAPI application
@@ -37,6 +38,7 @@ app.include_router(predict.router)
 app.include_router(ussd.router)
 app.include_router(sms.router)
 app.include_router(whatsapp.router)
+app.include_router(logistics_router)
 
 
 # Health check endpoint
