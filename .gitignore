@@ -2,3 +2,8 @@
 /workflow 1.png
 /workflow-zip.zip
 /workflow.svg
+/.vscode/
+/venv/
+__pycache__/
+*.pyc
+.env/example

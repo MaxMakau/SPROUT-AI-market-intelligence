@@ -126,13 +126,19 @@ def calculate_transport_cost(
         
         try:
             url = 'https://api.openrouteservice.org/v2/matrix/driving-car'
-            headers = {'Authorization': ors_key, 'Content-Type': 'application/json'}
+            # Correct headers with Bearer token for authorization
+            headers = {
+                'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+                'Authorization': ors_key,  # API key is used directly as Bearer token
+                'Content-Type': 'application/json; charset=utf-8'
+            }
             # ORS expects locations as [lon, lat]
             locations = [[coord1[1], coord1[0]], [coord2[1], coord2[0]]]
-            body = {'locations': locations, 'metrics': ['distance'], 'units': 'm'}
+            body = {'locations': locations, 'metrics': ['distance']}
             
             logger.debug(f"   POST {url}")
-            logger.debug(f"   Payload: {body}")
+            logger.debug(f"   Headers: Accept, Authorization, Content-Type")
+            logger.debug(f"   Payload: locations={locations}, metrics=['distance']")
             
             resp = requests.post(url, json=body, headers=headers, timeout=10)
             resp.raise_for_status()
@@ -148,7 +154,7 @@ def calculate_transport_cost(
             meters = distances[0][1]
             km = float(meters) / 1000.0
             
-            logger.info(f"✅ ORS matrix distance: {from_text} → {to_text} = {km:.2f} km")
+            logger.info(f"✅ ORS matrix distance: {from_text} → {to_text} = {km:.2f} km ({meters:.0f} m)")
             return km
             
         except requests.exceptions.RequestException as e:
