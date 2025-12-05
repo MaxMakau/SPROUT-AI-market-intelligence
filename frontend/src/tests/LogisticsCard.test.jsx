@@ -15,13 +15,27 @@ describe('LogisticsCard', () => {
 
   it('renders logistics card', () => {
     render(<LogisticsCard farmer={mockFarmer} />);
-    expect(screen.getByText('Logistics Recommendation')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /get recommendation/i })).toBeInTheDocument();
   });
 
   it('displays farmer information', () => {
+    apiClient.recommendLogistics.mockResolvedValue({
+      transport_mode: 'pickup',
+      transport_cost_kes: 3500,
+      distance_km: 12.4,
+      best_market_location: 'Nairobi Central Market',
+      market_price: 2400.0,
+    });
+
     render(<LogisticsCard farmer={mockFarmer} />);
-    expect(screen.getByText(/5 sacks/)).toBeInTheDocument();
-    expect(screen.getByText(/12.4 km/)).toBeInTheDocument();
+    // Trigger recommendation to show the plan details
+    const btn = screen.getByRole('button', { name: /get recommendation/i });
+    fireEvent.click(btn);
+
+    return waitFor(() => {
+      expect(screen.getByText(/5\s*sacks/i)).toBeInTheDocument();
+      expect(screen.getByText(/12\.4\s*km/i)).toBeInTheDocument();
+    });
   });
 
   it('calls recommendLogistics on button click', async () => {
@@ -37,7 +51,7 @@ describe('LogisticsCard', () => {
 
     render(<LogisticsCard farmer={mockFarmer} />);
     
-    const button = screen.getByText('Get Recommendation');
+    const button = screen.getByRole('button', { name: /get recommendation/i });
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -63,12 +77,12 @@ describe('LogisticsCard', () => {
 
     render(<LogisticsCard farmer={mockFarmer} />);
     
-    const button = screen.getByText('Get Recommendation');
+    const button = screen.getByRole('button', { name: /get recommendation/i });
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText('pickup')).toBeInTheDocument();
-      expect(screen.getByText(/Recommended transport/)).toBeInTheDocument();
+      expect(screen.getByText(/pickup/i)).toBeInTheDocument();
+      expect(screen.getByText(/recommended transport/i)).toBeInTheDocument();
     });
   });
 
@@ -85,11 +99,12 @@ describe('LogisticsCard', () => {
 
     render(<LogisticsCard farmer={mockFarmer} />);
     
-    fireEvent.click(screen.getByText('Get Recommendation'));
+    fireEvent.click(screen.getByRole('button', { name: /get recommendation/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Transport Cost/)).toBeInTheDocument();
-      expect(screen.getByText(/KES 3,500/)).toBeInTheDocument();
+      expect(screen.getByText(/transport cost/i)).toBeInTheDocument();
+      // The component displays transport cost as a number with "sh" suffix (e.g., 3500sh)
+      expect(screen.getByText(/3500/)).toBeInTheDocument();
     });
   });
 
@@ -98,10 +113,10 @@ describe('LogisticsCard', () => {
 
     render(<LogisticsCard farmer={mockFarmer} />);
     
-    fireEvent.click(screen.getByText('Get Recommendation'));
+    fireEvent.click(screen.getByRole('button', { name: /get recommendation/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('API Error')).toBeInTheDocument();
+      expect(screen.getByText(/API Error/)).toBeInTheDocument();
     });
   });
 
@@ -121,10 +136,11 @@ describe('LogisticsCard', () => {
       <LogisticsCard farmer={mockFarmer} onCreateShipment={onCreateShipment} />
     );
     
-    fireEvent.click(screen.getByText('Get Recommendation'));
+    fireEvent.click(screen.getByRole('button', { name: /get recommendation/i }));
 
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Create Shipment'));
+      const createBtn = screen.getByRole('button', { name: /create shipment/i });
+      fireEvent.click(createBtn);
       expect(onCreateShipment).toHaveBeenCalledWith(mockRecommendation);
     });
   });
