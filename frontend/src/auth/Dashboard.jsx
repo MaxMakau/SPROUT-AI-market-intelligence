@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getPrediction, predictMarket } from '../lib/apiClient';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SpeechControls from '../components/SpeechControls';
 
 const COUNTIES = ["Kajiado", "Narok", "Nakuru", "Nyandarua", "Transnzoia"];
 const SUBCOUNTIES = {
@@ -37,6 +38,14 @@ export default function Dashboard() {
     county: prediction?.location || COUNTIES[0],
     subcounty: prediction?.subcounty || (SUBCOUNTIES[COUNTIES[0]][0] || '')
   });
+  const [lang, setLang] = useState('en-US');
+
+  const SWAHILI_PRODUCE_MAP = {
+    mahindi: 'maize',
+    maharagwe: 'beans',
+    vitunguu: 'onions',
+    ngano: 'wheat'
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -152,6 +161,62 @@ export default function Dashboard() {
         {/* Left: editable inputs + history */}
         <div className="col-span-1 bg-white/80 p-4 rounded text-slate-900">
           <h3 className="text-lg font-semibold mb-3">Your crop & location</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Your crop & location</h3>
+            <div className="flex items-center gap-3">
+              <select value={lang} onChange={(e) => setLang(e.target.value)} className="p-1 rounded bg-slate-200 text-slate-800">
+                <option value="en-US">English</option>
+                <option value="sw-KE">Kiswahili (Swahili)</option>
+              </select>
+              <SpeechControls
+                lang={lang}
+                onTranscript={(text) => {
+                  if (!text) return;
+                  const t = text.toLowerCase();
+                  // number extraction
+                  const numMatch = t.match(/(\d+\.?\d*)/);
+                  if (numMatch) {
+                    setForm(prev => ({ ...prev, quantity: Number(numMatch[0]) }));
+                  }
+                  // produce (English)
+                  for (const p of PRODUCE) {
+                    if (t.includes(p)) {
+                      setForm(prev => ({ ...prev, produce: p }));
+                      break;
+                    }
+                  }
+                  // produce (Swahili map)
+                  if (lang.startsWith('sw')) {
+                    for (const [k, v] of Object.entries(SWAHILI_PRODUCE_MAP)) {
+                      if (t.includes(k)) {
+                        setForm(prev => ({ ...prev, produce: v }));
+                        break;
+                      }
+                    }
+                  }
+                  // county
+                  for (const c of COUNTIES) {
+                    if (t.includes(c.toLowerCase())) {
+                      setForm(prev => ({ ...prev, county: c, subcounty: SUBCOUNTIES[c][0] || '' }));
+                      break;
+                    }
+                  }
+                }}
+                speakText={() => {
+                  if (lang.startsWith('sw')) {
+                    if (prediction) {
+                      return `Soko linalopendekezwa ni ${prediction.best_market}. Bei inayotarajiwa ni shilingi ${prediction.expected_price} kwa kilo. Gharama ya usafirishaji ni shilingi ${prediction.transport_cost}. Faida safi ${prediction.net_profit} shilingi.`;
+                    }
+                    return `Uteuzi wako ni ${form.produce}, kilo ${form.quantity}, ${form.county}. Bonyeza "Get Recommendation" kupata mapendekezo.`;
+                  }
+                  if (prediction) {
+                    return `Recommended market ${prediction.best_market}. Expected price ${prediction.expected_price} shillings per kilogram. Transport cost ${prediction.transport_cost} shillings. Net profit ${prediction.net_profit} shillings.`;
+                  }
+                  return `Current selection ${form.produce}, ${form.quantity} kilograms, ${form.county}. Press Get Recommendation to ask the model.`;
+                }}
+              />
+            </div>
+          </div>
           <form onSubmit={submitPrediction} className="space-y-3">
             <div>
               <label className="block text-sm text-slate-700">Produce</label>
