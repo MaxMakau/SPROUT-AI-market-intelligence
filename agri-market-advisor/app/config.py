@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     csv_data_path: str = "data/wfp_food_prices_ken.csv"
     # Persistence for prediction jobs (SQLite file path)
     prediction_db_path: str = "data/predictions.db"
+    # Persistence for user accounts (SQLite file path)
+    user_db_path: str = "data/users.db"
     
     class Config:
         env_file = ".env"

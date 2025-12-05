@@ -88,6 +88,28 @@ export function predictMarket(payload) {
   });
 }
 
+export function signup(payload) {
+  return request("/api/signup", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function signin(payload) {
+  return request("/api/signin", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function getPrediction(jobId) {
+  return request(`/api/predict/${jobId}`);
+}
+
+export function getLogistics(jobId) {
+  return request(`/api/logistics/${jobId}`);
+}
+
 export async function withRetry(fn, maxAttempts = 3) {
   let lastError;
   for (let i = 0; i < maxAttempts; i++) {

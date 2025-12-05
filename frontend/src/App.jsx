@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import LogisticsCard from './components/LogisticsCard';
 import LogisticsModal from './components/LogisticsModal';
 import ErrorBanner from './components/ErrorBanner';
 import LoadingSpinner from './components/LoadingSpinner';
 import { getMarkets, createShipment } from './lib/apiClient';
+import Signup from './auth/Signup';
+import Signin from './auth/Signin';
+import Dashboard from './auth/Dashboard';
+import Logistics from './auth/Logistics';
 import { demoFarmer, mockMarkets } from './lib/constants';
 import './index.css';
 
@@ -72,78 +77,40 @@ export default function App() {
       <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            🌾 SPROUT Logistics
+            🌾 SPROUT AI
           </h1>
           <p className="text-slate-400 text-sm mt-1">Agricultural Market Intelligence</p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <ErrorBanner
-            message={error}
-            onDismiss={() => setError(null)}
-            type="warning"
-          />
-        )}
+      <BrowserRouter>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex gap-2 mb-6">
+            <Link to="/" className="px-3 py-1 bg-slate-700 rounded">Home</Link>
+            <Link to="/signup" className="px-3 py-1 bg-slate-700 rounded">Sign Up</Link>
+            <Link to="/signin" className="px-3 py-1 bg-slate-700 rounded">Sign In</Link>
+            <Link to="/dashboard" className="px-3 py-1 bg-slate-700 rounded">Dashboard</Link>
+            <Link to="/logistics" className="px-3 py-1 bg-slate-700 rounded">Logistics</Link>
+          </div>
 
-        {loading ? (
-          <LoadingSpinner message="Loading markets..." />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-          >
-            {/* Left: Logistics Recommendation */}
-            <div className="lg:col-span-2">
-              <LogisticsCard
-                farmer={farmer}
-                markets={markets}
-                onCreateShipment={handleCreateShipment}
-              />
-            </div>
-
-            {/* Right: Markets Quick View */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-slate-800 border border-slate-700 rounded-lg p-6 shadow-lg"
-            >
-              <h3 className="text-lg font-semibold mb-4 text-cyan-400">Available Markets</h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {markets.slice(0, 8).map((market) => (
-                  <motion.div
-                    key={market.id}
-                    whileHover={{ x: 4 }}
-                    onClick={() => {
-                      setFarmer(prev => ({
-                        ...prev,
-                        best_market_location: market.name,
-                        distance_km: market.distance_km,
-                        market_price: market.latest_price,
-                      }));
-                    }}
-                    className="p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <p className="font-medium text-white text-sm">{market.name}</p>
-                        <p className="text-slate-400 text-xs mt-1">📍 {market.distance_km} km</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-cyan-400 text-sm">{market.latest_price}sh/kg</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+          <Routes>
+            <Route path="/" element={
+              <div className="py-24">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h2 className="text-6xl font-extrabold leading-tight">Sprout AI</h2>
+                  <p className="mt-6 text-2xl text-slate-300">AI-powered market &amp; transport intelligence for smallholder farmers.</p>
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </main>
+            } />
+
+            <Route path="/signup" element={<Signup onSuccess={(jobId) => { if (jobId) localStorage.setItem('last_job_id', jobId); window.location.href = '/dashboard'; }} />} />
+            <Route path="/signin" element={<Signin />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/logistics" element={<Logistics />} />
+          </Routes>
+        </main>
+      </BrowserRouter>
 
       {/* Modal */}
       <AnimatePresence>
