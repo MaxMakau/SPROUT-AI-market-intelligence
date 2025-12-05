@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Truck, Car, Bike, RefreshCw } from 'lucide-react';
 import { recommendLogistics } from '../lib/apiClient';
+import { computeTransportCostDetailed } from '../lib/logistics';
 import LoadingSpinner from './LoadingSpinner';
 
 function TransportIcon({ mode }) {
@@ -90,8 +91,15 @@ export default function LogisticsCard({ farmer, markets, onCreateShipment }) {
             {/* Transport Cost */}
             <div className="bg-slate-700 rounded-lg p-4">
               <p className="text-xs text-slate-400 mb-1">Transport Cost</p>
-              <p className="text-2xl font-bold text-cyan-400">{plan.transport_cost_kes}sh</p>
-              <p className="text-xs text-slate-400 mt-1">({plan.transport_cost_kes / farmer.quantity_sacks}sh/sack)</p>
+              {(() => {
+                const detailed = computeTransportCostDetailed(farmer.quantity_sacks * 90, plan.distance_km);
+                return (
+                  <>
+                    <p className="text-2xl font-bold text-cyan-400">{detailed.total_cost}sh</p>
+                    <p className="text-xs text-slate-400 mt-1">({Math.round(detailed.total_cost / detailed.quantity_sacks)}sh/sack)</p>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Market Price */}
@@ -102,15 +110,15 @@ export default function LogisticsCard({ farmer, markets, onCreateShipment }) {
             </div>
           </div>
 
-          {/* Details */}
+            {/* Details */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="bg-slate-700 rounded-lg p-3">
               <p className="text-slate-400">Distance</p>
-              <p className="font-semibold text-white text-lg">{plan.distance_km}km</p>
+                <p className="font-semibold text-white text-lg">{plan.distance_km}km</p>
             </div>
             <div className="bg-slate-700 rounded-lg p-3">
               <p className="text-slate-400">Quantity</p>
-              <p className="font-semibold text-white text-lg">{farmer.quantity_sacks} sacks</p>
+                <p className="font-semibold text-white text-lg">{farmer.quantity_sacks} sacks</p>
             </div>
           </div>
 

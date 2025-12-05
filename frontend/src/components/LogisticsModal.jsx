@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { X, Check } from 'lucide-react';
+import { computeTransportCostDetailed } from '../lib/logistics';
 
 export default function LogisticsModal({ plan, farmer, onConfirm, onCancel, loading = false }) {
   // Calculate ETA (mock: avg speed 60km/h)
@@ -56,23 +57,28 @@ export default function LogisticsModal({ plan, farmer, onConfirm, onCancel, load
           </div>
 
           {/* Cost Breakdown */}
-          <div className="bg-slate-700 rounded-lg p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-green-400 uppercase">Pricing</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-300">Transport Cost:</span>
-                <span className="font-semibold text-white">{plan.transport_cost_kes}sh total</span>
+          {(() => {
+            const detailed = computeTransportCostDetailed(farmer.quantity_sacks * 90, plan.distance_km);
+            return (
+              <div className="bg-slate-700 rounded-lg p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-green-400 uppercase">Pricing</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">Transport Cost:</span>
+                    <span className="font-semibold text-white">{detailed.total_cost}sh total</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">Per Sack:</span>
+                    <span className="font-semibold text-cyan-300">{Math.round(detailed.total_cost / Math.max(1, detailed.quantity_sacks))}sh</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-600 flex justify-between">
+                    <span className="text-slate-300">Market Price:</span>
+                    <span className="font-semibold text-green-400">{plan.market_price}sh/kg</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-300">Per Sack:</span>
-                <span className="font-semibold text-cyan-300">{plan.transport_cost_kes / farmer.quantity_sacks}sh</span>
-              </div>
-              <div className="pt-2 border-t border-slate-600 flex justify-between">
-                <span className="text-slate-300">Market Price:</span>
-                <span className="font-semibold text-green-400">{plan.market_price}sh/kg</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* ETA */}
           <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import LogisticsCard from './components/LogisticsCard';
 import LogisticsModal from './components/LogisticsModal';
 import ErrorBanner from './components/ErrorBanner';
+import SuccessBanner from './components/SuccessBanner';
 import LoadingSpinner from './components/LoadingSpinner';
 import { getMarkets, createShipment } from './lib/apiClient';
 import Signup from './auth/Signup';
@@ -17,6 +18,7 @@ export default function App() {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [farmer, setFarmer] = useState(demoFarmer);
   const [modalOpen, setModalOpen] = useState(false);
@@ -56,14 +58,12 @@ export default function App() {
         sacks: farmer.quantity_sacks,
         farmer_id: farmer.id,
       };
-      await createShipment(payload);
+      const res = await createShipment(payload);
       setError(null);
       setModalOpen(false);
-      // Show success message
-      setTimeout(() => {
-        alert('Shipment created successfully!');
-        setSelectedPlan(null);
-      }, 500);
+      setSelectedPlan(null);
+      // Show a generic success message (do not show internal IDs)
+      setSuccess({ message: 'Shipment scheduled successfully', detail: res });
     } catch (e) {
       setError(`Failed to create shipment: ${e.message}`);
     } finally {
@@ -86,6 +86,8 @@ export default function App() {
       {/* Main Content */}
       <BrowserRouter>
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {error && <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"><ErrorBanner message={error} onDismiss={() => setError(null)} /></div>}
+          {success && <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"><SuccessBanner message={success.message} onDismiss={() => setSuccess(null)} /></div>}
           <div className="flex gap-2 mb-6">
             <Link to="/" className="px-3 py-1 bg-slate-700 rounded">Home</Link>
             <Link to="/signup" className="px-3 py-1 bg-slate-700 rounded">Sign Up</Link>

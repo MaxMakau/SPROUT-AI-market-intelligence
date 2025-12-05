@@ -68,7 +68,7 @@ export function getPriceHistory(queryParams = {}) {
 }
 
 export function recommendLogistics(payload) {
-  return request("/api/logistics/recommend", {
+  return request("/logistics/recommend", {
     method: "POST",
     body: JSON.stringify(payload)
   });
@@ -108,6 +108,10 @@ export function getPrediction(jobId) {
 
 export function getLogistics(jobId) {
   return request(`/api/logistics/${jobId}`);
+}
+
+export function getDetailedLogistics(jobId) {
+  return request(`/logistics/job/${jobId}/details`);
 }
 
 export async function withRetry(fn, maxAttempts = 3) {

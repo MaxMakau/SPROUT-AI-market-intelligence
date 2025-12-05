@@ -222,3 +222,22 @@ async def get_transport_modes() -> dict:
             for mode, cost in TRANSPORT_MODES.items()
         ]
     }
+
+
+@router.post("/shipments")
+async def create_shipment(shipment: dict) -> dict:
+    """
+    Minimal shipment creation endpoint to persist a shipment request.
+
+    This endpoint stores the incoming shipment payload in the lightweight
+    prediction store and returns a `shipment_id` that clients can use as a
+    reference. It is intentionally simple to act as a scaffold for frontend
+    integration; a full shipment management system (assignment, tracking,
+    carrier integration) can be implemented later.
+    """
+    try:
+        # Save the shipment payload and return an id
+        shipment_id = save_result({"shipment": shipment})
+        return {"shipment_id": shipment_id, "status": "created"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating shipment: {str(e)}")
